@@ -65,19 +65,20 @@ export default {
       return json({ ok: true, message: 'femme backend live (gemini)' }, 200, corsHeaders);
     }
 
-    if (!env.GEMINI_API_KEY) {
+    const apiKey = (env.GEMINI_API_KEY || '').trim();
+    if (!apiKey) {
       return json({ error: 'GEMINI_API_KEY not configured' }, 500, corsHeaders);
     }
 
     try {
       if (task === 'estimate_calories') {
-        return json(await estimateCalories(body.description, env.GEMINI_API_KEY), 200, corsHeaders);
+        return json(await estimateCalories(body.description, apiKey), 200, corsHeaders);
       }
       if (task === 'chat') {
-        return json(await chat(body.context, body.history, env.GEMINI_API_KEY), 200, corsHeaders);
+        return json(await chat(body.context, body.history, apiKey), 200, corsHeaders);
       }
       if (task === 'search_product') {
-        return json(await searchProduct(body.query, env.GEMINI_API_KEY), 200, corsHeaders);
+        return json(await searchProduct(body.query, apiKey), 200, corsHeaders);
       }
       return json({ error: 'Unknown task' }, 400, corsHeaders);
     } catch (e) {
