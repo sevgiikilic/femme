@@ -1,0 +1,7 @@
+name = "femme-ai"
+main = "femme-worker.js"
+compatibility_date = "2026-05-04"
+account_id = "6a81fb7047fa8d4d242a0b359018f816"
+
+[build]
+  command = ""
