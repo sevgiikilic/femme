@@ -1,0 +1,3200 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>femme — session log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ════════════════════════════════════════════════
+     FEMME — Session Log
+     A noir-shoujo system: Cowboy Bebop × Sailor Moon
+     ════════════════════════════════════════════════ */
+
+  /* ───── DEFAULT: NIGHT MAUVE (Bebop opening + Sailor Moon night sky) ───── */
+  :root, [data-theme="dark"] {
+    --bg:        #15102a;   /* deep night purple */
+    --bg-2:      #1f1838;   /* card recess */
+    --paper:     #211a3d;   /* card surface */
+    --paper-2:   #2a2148;   /* hover surface */
+    --ink:       #f4ecd8;   /* moonlight cream — primary text */
+    --ink-soft:  #c4b8d4;   /* secondary text */
+    --ink-faint: #8a7da0;   /* tertiary, labels */
+    --line:      #3d3258;   /* dividers */
+    --line-soft: #2c2545;
+    --crimson:   #e63b5e;   /* neon crimson — Bebop title red */
+    --crimson-deep: #b8254a;
+    --rose:      #f4a8c5;   /* Sailor Moon ribbon pink */
+    --rose-soft: #d68aac;
+    --ribbon:    #f4c14f;   /* hot gold accent */
+    --ribbon-soft: #d4a23a;
+    --moon:      #f4ecd8;   /* moonlight */
+    --twilight:  #6b5b9e;   /* lavender shadow */
+    --sage:      #7ec1a8;   /* mint */
+    --on-rose:   #15102a;   /* dark text for rose pink bg */
+    --on-ribbon: #15102a;   /* dark text for gold bg */
+    --shadow-color: #000;
+    --shadow-card: 0 0 0 1px rgba(244,236,216,0.08);
+    --hard-shadow: 4px 4px 0;
+    --grain-opacity: 0.08;
+    --scanline-opacity: 0.025;
+    --grain-blend: screen;
+  }
+
+  /* ───── ALT: WARM CREAM (paper / Bebop sepia print) ───── */
+  [data-theme="light"] {
+    --bg:        #f0ead8;
+    --bg-2:      #e6dfc8;
+    --paper:     #f7f1e0;
+    --paper-2:   #ebe3c8;
+    --ink:       #1c1814;
+    --ink-soft:  #5a4e3f;
+    --ink-faint: #948770;
+    --line:      #c9bf9f;
+    --line-soft: #ddd3b3;
+    --crimson:   #8b1a2e;
+    --crimson-deep: #6e1622;
+    --rose:      #e8b4b8;
+    --rose-soft: #f0d4d2;
+    --ribbon:    #b8893a;
+    --ribbon-soft: #9a6f28;
+    --moon:      #e8d8a8;
+    --twilight:  #3d3a52;
+    --sage:      #8a9b78;
+    --on-rose:   #1c1814;
+    --on-ribbon: #1c1814;
+    --shadow-color: #1c1814;
+    --shadow-card: 3px 3px 0 var(--ink);
+    --hard-shadow: 4px 4px 0;
+    --grain-opacity: 0.06;
+    --scanline-opacity: 0.012;
+    --grain-blend: multiply;
+  }
+
+  /* ───── FONT ROLES ───── */
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --f-display: 'Cormorant Garamond', Georgia, serif;  /* big italic moments — page titles, big numbers */
+    --f-logo: 'Cinzel', Georgia, serif;                  /* brand mark + roman numerals only */
+    --f-ui: 'DM Sans', system-ui, sans-serif;            /* everything functional — body, nav, buttons, forms, tables */
+    --f-meta: 'JetBrains Mono', ui-monospace, monospace; /* meta labels, eyebrows, status */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--f-ui);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.55;
+    letter-spacing: -0.003em;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+  [data-theme="dark"] { color-scheme: dark; }
+  [data-theme="light"] { color-scheme: light; }
+
+  /* film grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 200;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.7'/></svg>");
+    mix-blend-mode: var(--grain-blend);
+  }
+
+  /* subtle scan lines — vintage CRT, very faint */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 3px,
+      currentColor 3px,
+      currentColor 4px
+    );
+    color: var(--ink);
+    opacity: var(--scanline-opacity);
+  }
+
+  .app {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+  }
+
+  /* ═══════════════ SIDEBAR ═══════════════ */
+  .sidebar {
+    background: var(--paper);
+    border-right: 2px solid var(--ink);
+    padding: 28px 24px;
+    position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+  }
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0; right: -2px; bottom: 0;
+    width: 4px;
+    background: var(--ink);
+    box-shadow: 4px 0 0 var(--crimson);
+  }
+
+  .brand {
+    margin-bottom: 28px;
+    position: relative;
+    text-align: left;
+  }
+  .brand-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .brand-mark svg {
+    width: 28px; height: 28px;
+    flex-shrink: 0;
+  }
+  .brand-logo {
+    font-family: var(--f-logo);
+    font-weight: 500;
+    font-size: 36px;
+    letter-spacing: 0.15em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .brand-tag {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--crimson);
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  .brand-subtag {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ───── THEME TOGGLE ───── */
+  .theme-toggle {
+    background: none;
+    border: 1px solid var(--line);
+    margin: 18px 0 6px;
+    padding: 8px 10px;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: border-color .15s;
+  }
+  .theme-toggle:hover { border-color: var(--crimson); }
+  .theme-toggle-track {
+    width: 36px; height: 20px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .theme-toggle-thumb {
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 20px; height: 20px;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .25s ease;
+  }
+  [data-theme="light"] .theme-toggle-thumb { transform: translateX(16px); }
+  .theme-toggle-thumb svg { width: 11px; height: 11px; }
+  .theme-toggle-thumb .t-sun { display: none; }
+  .theme-toggle-thumb .t-moon { display: block; }
+  [data-theme="light"] .theme-toggle-thumb .t-sun { display: block; }
+  [data-theme="light"] .theme-toggle-thumb .t-moon { display: none; }
+  .theme-toggle-label {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+  }
+
+  .nav-label {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--ink-soft);
+    margin: 18px 0 8px;
+    padding-left: 4px;
+  }
+  .nav { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+  .nav-item {
+    background: none; border: 0;
+    text-align: left;
+    padding: 11px 14px;
+    font-family: var(--f-ui);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    align-items: center;
+    gap: 10px;
+    transition: all .15s ease;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover {
+    background: var(--bg-2);
+    border-left-color: var(--crimson);
+  }
+  .nav-item.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-left-color: var(--crimson);
+  }
+  .nav-num {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+  .nav-item.active .nav-num { color: var(--rose); }
+
+  .sidebar-foot {
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-family: var(--f-meta);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    line-height: 1.7;
+  }
+
+  /* ═══════════════ MAIN ═══════════════ */
+  .main { padding: 40px 56px 80px; max-width: 1240px; }
+
+  .page-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px;
+    padding-bottom: 24px;
+    margin-bottom: 36px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+  }
+  .page-head::after {
+    content: '';
+    position: absolute;
+    bottom: -6px; left: 0;
+    width: 60px; height: 2px;
+    background: var(--crimson);
+  }
+  .page-eyebrow {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    color: var(--crimson);
+    margin-bottom: 10px;
+  }
+  .page-title {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 80px;
+    letter-spacing: -0.025em;
+    line-height: 0.92;
+    color: var(--ink);
+  }
+  .page-meta {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    text-align: right;
+  }
+  .page-meta strong {
+    display: block;
+    color: var(--ink);
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 22px;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    margin-top: 4px;
+  }
+
+  .page { display: none; animation: fade .35s ease; }
+  .page.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ═══════════════ CARDS ═══════════════ */
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 24px;
+    position: relative;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .card.soft {
+    box-shadow: 2px 2px 0 var(--line);
+    border-color: var(--line);
+  }
+
+  /* corner ornament — small star/cross at top-right */
+  .card.ornate::before {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 10px; height: 10px;
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor);
+    background-size: 1px 10px, 10px 1px;
+    background-position: center, center;
+    background-repeat: no-repeat;
+    color: var(--crimson);
+    opacity: 0.5;
+  }
+
+  .card-label {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--crimson);
+    margin-bottom: 14px;
+    display: flex; justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .card-value {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .card-value em {
+    font-style: italic;
+    color: var(--crimson);
+    font-size: 0.4em;
+    font-family: var(--f-meta);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-left: 4px;
+  }
+  .card-sub {
+    font-family: var(--f-ui);
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  /* ═══════════════ CYCLE RING ═══════════════ */
+  .ring-card {
+    grid-column: span 2;
+    display: flex;
+    gap: 36px;
+    align-items: center;
+  }
+  .ring-wrap {
+    width: 240px;
+    height: 240px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .ring-wrap svg { width: 100%; height: 100%; }
+  .ring-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .ring-day {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 88px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--crimson);
+  }
+  .ring-label {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .ring-info { flex: 1; }
+  .phase-eyebrow {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--crimson);
+    margin-bottom: 8px;
+  }
+  .phase-name {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 48px;
+    letter-spacing: -0.025em;
+    margin-bottom: 10px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .phase-name .moon-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  .phase-desc {
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    max-width: 480px;
+    font-size: 14px;
+  }
+  .phase-stats {
+    display: flex;
+    gap: 28px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  .phase-stat-label {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .phase-stat-val {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ═══════════════ FORMS ═══════════════ */
+  .form-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 130px;
+  }
+  .field-label {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+  }
+  .input, .select, textarea {
+    background: transparent;
+    border: 0;
+    border-bottom: 1.5px solid var(--ink);
+    padding: 9px 0;
+    font-family: var(--f-ui);
+    font-size: 15px;
+    color: var(--ink);
+    transition: border-color .15s;
+    border-radius: 0;
+    width: 100%;
+  }
+  textarea {
+    border: 1.5px solid var(--ink);
+    padding: 12px 14px;
+    resize: vertical;
+    min-height: 90px;
+    font-family: var(--f-ui);
+    background: var(--paper);
+  }
+  .input:focus, .select:focus, textarea:focus {
+    outline: 0;
+    border-color: var(--crimson);
+  }
+  .select {
+    appearance: none;
+    --arrow-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='black' fill='none' stroke-width='1.5'/></svg>");
+    padding-right: 22px;
+    cursor: pointer;
+    position: relative;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    background-size: 10px 6px;
+    -webkit-mask-image: none;
+  }
+  /* fallback that paints the SVG with currentColor via an overlay mask trick — keep simple: since data URIs can't read CSS vars, just draw the chevron in pure CSS */
+  .select {
+    background-image: none;
+  }
+  .select {
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position: calc(100% - 12px) 55%, calc(100% - 7px) 55%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+
+  .btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: 0;
+    padding: 12px 24px;
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    cursor: pointer;
+    transition: all .15s;
+    box-shadow: 2px 2px 0 var(--crimson);
+  }
+  .btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--crimson);
+  }
+  .btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--crimson);
+  }
+  .btn-ghost {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .btn-ghost:hover {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .btn-sm { padding: 8px 14px; font-size: 10px; }
+  .btn-accent { background: var(--crimson); box-shadow: 2px 2px 0 var(--ink); }
+  .btn-accent:hover { box-shadow: 3px 3px 0 var(--ink); }
+
+  /* ═══════════════ PHASE GUIDE ═══════════════ */
+  .phase-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .phase-row {
+    display: grid;
+    grid-template-columns: 60px 36px 160px 1fr;
+    gap: 20px;
+    padding: 22px 0;
+    border-bottom: 1px dashed var(--line);
+    align-items: start;
+  }
+  .phase-row:last-child { border-bottom: 0; }
+  .phase-row .roman {
+    font-family: var(--f-logo);
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--crimson);
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+  }
+  .phase-row .moon-icon {
+    width: 36px; height: 36px;
+  }
+  .phase-row h4 {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 24px;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .phase-row .days {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+  }
+  .phase-row p { font-size: 14px; color: var(--ink-soft); }
+
+  /* ═══════════════ CHIPS ═══════════════ */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .chip {
+    padding: 9px 16px;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    font-family: var(--f-ui);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .12s;
+    user-select: none;
+  }
+  .chip:hover {
+    background: var(--bg-2);
+    transform: translate(-1px, -1px);
+    box-shadow: 1px 1px 0 var(--crimson);
+  }
+  .chip.selected {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .chip.selected.accent {
+    background: var(--crimson);
+    border-color: var(--crimson);
+    color: var(--paper);
+  }
+  .chip.custom { border-style: dashed; }
+
+  .chip-cat {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    margin-top: 22px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .chip-cat::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--crimson);
+    transform: rotate(45deg);
+  }
+  .chip-cat:first-child { margin-top: 0; }
+
+  /* ═══════════════ SCALE ═══════════════ */
+  .scale {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .scale-btn {
+    flex: 1;
+    padding: 16px 0;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    cursor: pointer;
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    transition: all .12s;
+  }
+  .scale-btn:hover { background: var(--bg-2); }
+  .scale-btn.selected {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .scale-bloat .scale-btn.selected[data-v="-1"] { background: var(--sage); border-color: var(--sage); color: #fff; }
+  .scale-bloat .scale-btn.selected[data-v="0"]  { background: var(--ink-soft); border-color: var(--ink-soft); color: var(--bg); }
+  .scale-bloat .scale-btn.selected[data-v="1"]  { background: var(--ribbon); border-color: var(--ribbon); color: var(--on-ribbon); }
+  .scale-bloat .scale-btn.selected[data-v="2"]  { background: var(--crimson-deep); border-color: var(--crimson-deep); color: #fff; }
+  .scale-bloat .scale-btn.selected[data-v="3"]  { background: var(--crimson); border-color: var(--crimson); color: #fff; }
+
+  /* ═══════════════ TABLES ═══════════════ */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px dashed var(--line);
+  }
+  th {
+    font-family: var(--f-meta);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--crimson);
+    font-weight: 500;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  td { color: var(--ink); font-family: var(--f-ui); }
+  td.num {
+    font-family: var(--f-ui);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .delta-up { color: var(--crimson); }
+  .delta-dn { color: var(--sage); }
+  .delta-eq { color: var(--ink-faint); }
+
+  /* ═══════════════ FOOD LIST ═══════════════ */
+  .food-list { display: flex; flex-direction: column; gap: 6px; }
+  .food-item {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 14px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    align-items: center;
+  }
+  .food-pref {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+  }
+  .food-pref.love { background: var(--crimson); color: #fff; }
+  .food-pref.skip { background: var(--ink-faint); }
+  .food-pref.react { background: var(--ribbon); color: var(--on-ribbon); border-color: var(--on-ribbon); }
+  .food-pref.neutral { background: var(--paper); color: var(--ink); }
+  .food-item-name {
+    font-family: var(--f-ui);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .food-item-meta {
+    font-family: var(--f-ui);
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .food-item-meta .tag {
+    background: var(--rose);
+    color: var(--on-rose);
+    padding: 2px 8px;
+    margin-right: 4px;
+    display: inline-block;
+    cursor: pointer;
+    border: 1px solid var(--on-rose);
+    font-family: var(--f-meta);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .food-actions { display: flex; gap: 4px; align-items: center; }
+
+  .micro-btn {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 6px 10px;
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all .12s;
+  }
+  .micro-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .micro-btn.danger:hover { background: var(--crimson); border-color: var(--crimson); }
+
+  /* ═══════════════ RECOMMENDATIONS ═══════════════ */
+  .rec-list { display: flex; flex-direction: column; }
+  .rec {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .rec:last-child { border: 0; }
+  .rec-icon {
+    font-family: var(--f-logo);
+    font-weight: 500;
+    color: var(--crimson);
+    font-size: 16px;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .rec h5 {
+    font-family: var(--f-ui);
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 2px;
+    color: var(--ink);
+  }
+  .rec p { font-size: 13px; color: var(--ink-soft); }
+
+  /* ═══════════════ BARS ═══════════════ */
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 150px;
+    padding: 24px 0 32px;
+    position: relative;
+  }
+  .bar {
+    flex: 1;
+    background: var(--ink);
+    position: relative;
+    min-height: 2px;
+    transition: all .25s;
+    border: 1px solid var(--ink);
+    border-bottom: 0;
+  }
+  .bar-label {
+    position: absolute;
+    bottom: -24px;
+    left: 50%; transform: translateX(-50%);
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .bar-val {
+    position: absolute;
+    top: -20px;
+    left: 50%; transform: translateX(-50%);
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ═══════════════ SECTION HEADS ═══════════════ */
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 36px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .section-head::after {
+    content: '';
+    position: absolute;
+    bottom: -1.5px; left: 0;
+    width: 32px;
+    height: 2px;
+    background: var(--crimson);
+  }
+  .section-head:first-child { margin-top: 0; }
+  .section-head h3 {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-head h3 .ornament {
+    width: 18px; height: 18px;
+    color: var(--crimson);
+  }
+  .section-head .meta {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+  }
+
+  /* ═══════════════ ONBOARDING ═══════════════ */
+  .onboard {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+  }
+  .onboard-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--crimson);
+    padding: 56px 64px;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+  }
+  .onboard-card::before {
+    content: 'SESSION 001 — INITIATION';
+    position: absolute;
+    top: -14px; left: 24px;
+    background: var(--paper);
+    padding: 0 12px;
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    color: var(--crimson);
+    border: 1px solid var(--ink);
+  }
+  .onboard h2 {
+    font-family: var(--f-logo);
+    font-weight: 500;
+    font-size: 64px;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    margin-bottom: 8px;
+    margin-top: 12px;
+  }
+  .onboard .subtitle {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .onboard p { color: var(--ink-soft); margin-bottom: 28px; font-size: 15px; }
+
+  /* ═══════════════ EMPTY ═══════════════ */
+  .empty {
+    padding: 36px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 17px;
+  }
+
+  /* ═══════════════ TOAST ═══════════════ */
+  .toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 22px;
+    font-family: var(--f-meta);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    z-index: 300;
+    transition: transform .3s ease;
+    pointer-events: none;
+    border: 1px solid var(--crimson);
+    box-shadow: 3px 3px 0 var(--crimson);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ═══════════════ SETTINGS ═══════════════ */
+  .settings-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--line);
+    align-items: center;
+  }
+  .settings-row:last-child { border: 0; }
+  .settings-row h5 {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 2px;
+    color: var(--ink);
+  }
+  .settings-row p { font-size: 13px; color: var(--ink-soft); }
+
+  /* ═══════════════ MEAL LOG ═══════════════ */
+  .meal-day { margin-bottom: 28px; }
+  .meal-day-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--ink);
+    margin-bottom: 10px;
+  }
+  .meal-day-date {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .meal-day-cal {
+    font-family: var(--f-meta);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--crimson);
+    letter-spacing: 0.15em;
+  }
+  .meal-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto auto;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    margin-bottom: 4px;
+    align-items: center;
+    font-size: 14px;
+  }
+  .meal-item-type {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--crimson);
+  }
+  .meal-item-cal {
+    font-family: var(--f-display);
+    font-style: italic;
+    color: var(--ink);
+    font-size: 16px;
+  }
+
+  /* ═══════════════ CHAT PAGE ═══════════════ */
+  .chat-container {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .chat-msgs {
+    overflow-y: auto;
+    padding: 24px 32px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .chat-msg {
+    max-width: 75%;
+    padding: 14px 18px;
+    font-size: 15px;
+    line-height: 1.55;
+    position: relative;
+  }
+  .chat-msg.user {
+    align-self: flex-end;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--crimson);
+  }
+  .chat-msg.assistant {
+    align-self: flex-start;
+    background: var(--bg);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ribbon);
+    font-family: var(--f-ui);
+  }
+  .chat-msg.assistant::before {
+    content: 'FEMME';
+    position: absolute;
+    top: -12px; left: 12px;
+    background: var(--paper);
+    padding: 0 8px;
+    font-family: var(--f-meta);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    color: var(--crimson);
+    border: 1px solid var(--ink);
+  }
+  .chat-msg.system {
+    align-self: center;
+    background: transparent;
+    color: var(--ink-faint);
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 14px;
+    text-align: center;
+    padding: 8px 16px;
+    border: 1px dashed var(--line);
+    max-width: 70%;
+  }
+  .chat-typing {
+    align-self: flex-start;
+    color: var(--ink-soft);
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    padding: 4px 8px;
+  }
+  .chat-quick {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 12px 32px;
+    border-top: 1px dashed var(--line);
+  }
+  .chat-quick button {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 8px 14px;
+    font-family: var(--f-ui);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .chat-quick button:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .chat-input-row {
+    padding: 16px 24px;
+    border-top: 1.5px solid var(--ink);
+    display: flex; gap: 10px;
+    background: var(--paper);
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    padding: 12px 14px;
+    font-family: var(--f-ui);
+    font-size: 15px;
+  }
+  .chat-input:focus { outline: 0; border-color: var(--crimson); }
+  .chat-send {
+    background: var(--crimson);
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 0 22px;
+    font-family: var(--f-meta);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .chat-send:hover { box-shadow: 3px 3px 0 var(--ink); transform: translate(-1px, -1px); }
+
+  /* ═══════════════ PRODUCT SEARCH ═══════════════ */
+  .product-search-wrap {
+    position: relative;
+    flex: 2;
+  }
+  .search-results {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-top: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 50;
+    box-shadow: 3px 3px 0 var(--crimson);
+    display: none;
+  }
+  .search-results.show { display: block; }
+  .search-result {
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px dashed var(--line);
+    transition: background .1s;
+  }
+  .search-result:last-child { border-bottom: 0; }
+  .search-result:hover { background: var(--bg-2); }
+  .search-result-name {
+    font-family: var(--f-ui);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 2px;
+    letter-spacing: -0.005em;
+  }
+  .search-result-desc {
+    font-family: var(--f-meta);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+  }
+  .search-status {
+    padding: 12px;
+    text-align: center;
+    font-family: var(--f-display);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  /* ═══════════════ HELPERS ═══════════════ */
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-8 { margin-bottom: 8px; }
+  .hidden { display: none !important; }
+
+  /* ═══════════════ RESPONSIVE ═══════════════ */
+  @media (max-width: 980px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; padding: 20px; }
+    .sidebar::after { display: none; }
+    .sidebar { border-right: 0; border-bottom: 2px solid var(--ink); box-shadow: 0 4px 0 var(--crimson); }
+    .nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .sidebar-foot { display: none; }
+    .main { padding: 24px; }
+    .page-title { font-size: 52px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .ring-card { flex-direction: column; }
+    .phase-row { grid-template-columns: 40px 32px 1fr; }
+    .phase-row .days { grid-column: 3; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast">Kaydedildi</div>
+
+<!-- Onboarding -->
+<div class="onboard hidden" id="onboard">
+  <div class="onboard-card">
+    <h2>FEMME</h2>
+    <div class="subtitle">a session log of body, mood &amp; cycle</div>
+    <p>Başlamak için son adet tarihini ve ortalama döngü süreni gir. Veriler tarayıcında saklanır, hiçbir yere gönderilmez.</p>
+    <div class="form-row">
+      <div class="field">
+        <label class="field-label">Son Adet Başlangıcı</label>
+        <input type="date" class="input" id="onb-last">
+      </div>
+      <div class="field">
+        <label class="field-label">Döngü Süresi (gün)</label>
+        <input type="number" class="input" id="onb-cycle" value="28" min="20" max="40">
+      </div>
+      <div class="field">
+        <label class="field-label">Adet Süresi (gün)</label>
+        <input type="number" class="input" id="onb-period" value="5" min="2" max="10">
+      </div>
+    </div>
+    <div class="form-row mt-24">
+      <button class="btn btn-accent" onclick="completeOnboarding()">Başla</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/>
+          <path d="M16 5a11 11 0 0 0 0 22 9 9 0 0 1 0-22z" fill="var(--crimson)"/>
+          <circle cx="22" cy="11" r="1.2" fill="var(--ink)"/>
+          <circle cx="9" cy="9" r="0.8" fill="var(--ribbon)"/>
+          <circle cx="6" cy="20" r="0.6" fill="var(--ribbon)"/>
+        </svg>
+        <div class="brand-logo">FEMME</div>
+      </div>
+      <div class="brand-tag">Session Log · v.iii</div>
+      <div class="brand-subtag">a body diary</div>
+    </div>
+
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Tema değiştir">
+      <span class="theme-toggle-track">
+        <span class="theme-toggle-thumb">
+          <svg class="t-moon" viewBox="0 0 16 16"><path d="M11 8.5a3.5 3.5 0 0 1-3.5-3.5c0-.7.2-1.3.5-1.9C5.7 3.6 4 5.6 4 8a4 4 0 0 0 7.7 1.5c-.2.1-.5 0-.7 0z" fill="currentColor"/></svg>
+          <svg class="t-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><line x1="8" y1="1" x2="8" y2="3"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="1" y1="8" x2="3" y2="8"/><line x1="13" y1="8" x2="15" y2="8"/><line x1="3.2" y1="3.2" x2="4.5" y2="4.5"/><line x1="11.5" y1="11.5" x2="12.8" y2="12.8"/><line x1="3.2" y1="12.8" x2="4.5" y2="11.5"/><line x1="11.5" y1="4.5" x2="12.8" y2="3.2"/></g></svg>
+        </span>
+      </span>
+      <span class="theme-toggle-label" id="theme-label">gece moru</span>
+    </button>
+
+    <div class="nav-label">Daily</div>
+    <nav class="nav">
+      <button class="nav-item active" data-page="dashboard"><span class="nav-num">i</span> Bugün</button>
+      <button class="nav-item" data-page="symptoms"><span class="nav-num">ii</span> Semptomlar</button>
+      <button class="nav-item" data-page="body"><span class="nav-num">iii</span> Beden</button>
+      <button class="nav-item" data-page="meals"><span class="nav-num">iv</span> Yemek Günlüğü</button>
+    </nav>
+
+    <div class="nav-label">Library</div>
+    <nav class="nav">
+      <button class="nav-item" data-page="cycle"><span class="nav-num">v</span> Döngü</button>
+      <button class="nav-item" data-page="food"><span class="nav-num">vi</span> Beslenme</button>
+      <button class="nav-item" data-page="skin"><span class="nav-num">vii</span> Cilt</button>
+      <button class="nav-item" data-page="fitness"><span class="nav-num">viii</span> Spor</button>
+    </nav>
+
+    <div class="nav-label">Insights</div>
+    <nav class="nav">
+      <button class="nav-item" data-page="insights"><span class="nav-num">ix</span> Öngörüler</button>
+      <button class="nav-item" data-page="chat"><span class="nav-num">x</span> Sohbet</button>
+      <button class="nav-item" data-page="settings"><span class="nav-num">xi</span> Ayarlar</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      [ data ] local only<br>
+      [ save ] auto
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ═══════════════ DASHBOARD ═══════════════ -->
+    <section class="page active" data-page="dashboard">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow" id="today-eyebrow">Session 001</div>
+          <h1 class="page-title">bugün</h1>
+        </div>
+        <div class="page-meta">
+          <span id="today-date">—</span>
+          <strong id="today-phase">—</strong>
+        </div>
+      </header>
+
+      <div class="grid grid-2">
+        <div class="card ring-card ornate">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 200 200" id="ring-svg">
+              <!-- decorative outer ticks -->
+              <g id="ring-ticks"></g>
+              <circle cx="100" cy="100" r="86" fill="none" stroke="#c9bf9f" stroke-width="1"/>
+              <circle cx="100" cy="100" r="86" fill="none" stroke="#1c1814" stroke-width="2"
+                      stroke-dasharray="540" stroke-dashoffset="540"
+                      transform="rotate(-90 100 100)" id="ring-progress" stroke-linecap="square"/>
+              <g id="ring-marks"></g>
+              <!-- tiny stars at compass points -->
+              <g fill="#8b1a2e">
+                <circle cx="100" cy="6" r="1.5"/>
+                <circle cx="194" cy="100" r="1.5"/>
+                <circle cx="100" cy="194" r="1.5"/>
+                <circle cx="6" cy="100" r="1.5"/>
+              </g>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-day" id="ring-day-num">—</div>
+              <div class="ring-label">Cycle Day</div>
+            </div>
+          </div>
+          <div class="ring-info">
+            <div class="phase-eyebrow" id="phase-day-meta">—</div>
+            <div class="phase-name">
+              <span id="phase-moon-icon"></span>
+              <span id="phase-current">—</span>
+            </div>
+            <div class="phase-desc" id="phase-current-desc">—</div>
+            <div class="phase-stats">
+              <div>
+                <div class="phase-stat-label">Bir Sonraki Adet</div>
+                <div class="phase-stat-val" id="next-period">—</div>
+              </div>
+              <div>
+                <div class="phase-stat-label">Ovulasyon</div>
+                <div class="phase-stat-val" id="next-ovu">—</div>
+              </div>
+              <div>
+                <div class="phase-stat-label">Doğurganlık</div>
+                <div class="phase-stat-val" id="fertile-window">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-4 mt-24">
+        <div class="card">
+          <div class="card-label"><span>Kilo</span><span id="weight-delta">—</span></div>
+          <div class="card-value" id="dash-weight">—<em>kg</em></div>
+          <div class="card-sub" id="weight-trend">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Şişkinlik</div>
+          <div class="card-value" id="dash-bloat">—</div>
+          <div class="card-sub" id="bloat-trend">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Ruh Hali</div>
+          <div class="card-value" id="dash-mood">—</div>
+          <div class="card-sub" id="mood-trend">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Spor (Hafta)</div>
+          <div class="card-value" id="dash-workouts">—<em>x</em></div>
+          <div class="card-sub" id="workout-trend">—</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Bu fazda öneriler</h3>
+        <span class="meta">Senin için</span>
+      </div>
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-label">Beslenme</div>
+          <div class="rec-list" id="rec-food"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Spor</div>
+          <div class="rec-list" id="rec-fitness"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Cilt</div>
+          <div class="rec-list" id="rec-skin"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ CYCLE ═══════════════ -->
+    <section class="page" data-page="cycle">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Phase Library</div>
+          <h1 class="page-title">döngü</h1>
+        </div>
+        <div class="page-meta">Tahmin Doğruluğu<strong id="cycle-accuracy">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label">Yeni Adet Kaydı</div>
+        <div class="form-row">
+          <div class="field">
+            <label class="field-label">Başlangıç Tarihi</label>
+            <input type="date" class="input" id="period-start">
+          </div>
+          <div class="field">
+            <label class="field-label">Süre (gün)</label>
+            <input type="number" class="input" id="period-len" min="1" max="14" placeholder="5">
+          </div>
+          <div class="field">
+            <label class="field-label">Akış</label>
+            <select class="select" id="period-flow">
+              <option value="hafif">Hafif</option>
+              <option value="orta" selected>Orta</option>
+              <option value="yoğun">Yoğun</option>
+              <option value="çok yoğun">Çok yoğun</option>
+            </select>
+          </div>
+          <button class="btn" onclick="addPeriod()">Kaydet</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Geçmiş döngüler</h3>
+        <span class="meta" id="avg-info">—</span>
+      </div>
+      <div class="card" style="padding:16px 24px;">
+        <table id="period-table">
+          <thead>
+            <tr><th>Başlangıç</th><th>Süre</th><th>Akış</th><th>Döngü Uzunluğu</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="section-head">
+        <h3>Faz rehberi</h3>
+        <span class="meta">The Four Phases</span>
+      </div>
+      <div class="card">
+        <div class="phase-guide" id="phase-guide"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ SYMPTOMS ═══════════════ -->
+    <section class="page" data-page="symptoms">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Daily Log</div>
+          <h1 class="page-title">semptomlar</h1>
+        </div>
+        <div class="page-meta"><span id="sym-date">—</span><strong id="sym-phase-label">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label"><span>Bugün için seç</span><span>Otomatik kaydedilir</span></div>
+        <div id="symptom-chips"></div>
+        <div class="form-row mt-16">
+          <div class="field">
+            <label class="field-label">Kendi Semptomunu Ekle</label>
+            <input type="text" class="input" id="custom-sym" placeholder="ör. tatlı krizi, ağız aft" onkeydown="if(event.key==='Enter')addCustomSymptom()">
+          </div>
+          <button class="btn-ghost btn" onclick="addCustomSymptom()">Ekle</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Ruh hali &amp; enerji</h3>
+        <span class="meta">scale 1—5</span>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-label">Ruh Hali · 1=düşük, 5=harika</div>
+          <div class="scale" id="mood-scale"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Enerji · 1=tükenmiş, 5=zinde</div>
+          <div class="scale" id="energy-scale"></div>
+        </div>
+      </div>
+
+      <div class="card mt-24">
+        <div class="card-label"><span>Notlar</span><span>Yazarken otomatik kaydedilir</span></div>
+        <textarea id="day-notes" placeholder="Bugüne dair gözlemlerin..."></textarea>
+      </div>
+    </section>
+
+    <!-- ═══════════════ BODY ═══════════════ -->
+    <section class="page" data-page="body">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Measurements</div>
+          <h1 class="page-title">beden</h1>
+        </div>
+        <div class="page-meta">Toplam Kayıt<strong id="body-count">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label">Bugünün Ölçümü</div>
+        <div class="form-row">
+          <div class="field">
+            <label class="field-label">Tarih</label>
+            <input type="date" class="input" id="body-date">
+          </div>
+          <div class="field">
+            <label class="field-label">Kilo (kg)</label>
+            <input type="number" step="0.1" class="input" id="body-weight" placeholder="—">
+          </div>
+          <div class="field">
+            <label class="field-label">Bel (cm)</label>
+            <input type="number" step="0.1" class="input" id="body-waist" placeholder="—">
+          </div>
+        </div>
+        <div class="form-row mt-24">
+          <div class="field" style="flex: 0 0 100%;">
+            <label class="field-label">Göbek Şişkinliği</label>
+            <div class="scale scale-bloat" id="bloat-scale"></div>
+            <div style="display:flex;justify-content:space-between;font-family: var(--f-meta);font-size:11px;font-weight:500;color:var(--ink-soft);margin-top:8px;letter-spacing:.12em;text-transform:uppercase;">
+              <span>−1 düz</span><span>0 nötr</span><span>+1</span><span>+2</span><span>+3 en şişkin</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row mt-16">
+          <button class="btn" onclick="saveBody()">Ölçümü Kaydet</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Şişkinlik seyri</h3>
+        <span class="meta">last 14 days</span>
+      </div>
+      <div class="card">
+        <div class="bars" id="bloat-bars"></div>
+      </div>
+
+      <div class="section-head">
+        <h3>Ölçüm günlüğü</h3>
+        <span class="meta">Karşılaştırma</span>
+      </div>
+      <div class="card" style="padding:16px 24px;">
+        <table id="body-table">
+          <thead>
+            <tr><th>Tarih</th><th>Kilo</th><th>Δ Kilo</th><th>Bel</th><th>Şişkinlik</th><th>Faz</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════ FOOD PREFS ═══════════════ -->
+    <section class="page" data-page="food">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Personal Library</div>
+          <h1 class="page-title">beslenme</h1>
+        </div>
+        <div class="page-meta">Tercihler<strong id="food-total">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label">Yiyecek / İçecek Ekle</div>
+        <div class="form-row">
+          <div class="field" style="flex:2;">
+            <label class="field-label">Ad</label>
+            <input type="text" class="input" id="food-name" placeholder="ör. somon, yulaf, koyu çikolata">
+          </div>
+          <div class="field">
+            <label class="field-label">Tercih</label>
+            <select class="select" id="food-pref">
+              <option value="love">A · Seviyorum</option>
+              <option value="neutral" selected>○ Nötr</option>
+              <option value="skip">× Tercih etmiyorum</option>
+              <option value="react">! Tepki veriyor</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Kategori</label>
+            <select class="select" id="food-cat">
+              <option>İçecek</option><option>Süt Ürünü</option><option>Tahıl</option>
+              <option>Sebze</option><option>Meyve</option><option>Protein</option>
+              <option>Yağ &amp; Tohum</option><option>Atıştırmalık</option><option>Diğer</option>
+            </select>
+          </div>
+          <button class="btn" onclick="addFood()">Ekle</button>
+        </div>
+      </div>
+
+      <div class="section-head"><h3>A · Sevdiklerim</h3><span class="meta" id="love-count">—</span></div>
+      <div class="card"><div class="food-list" id="food-love"></div></div>
+
+      <div class="section-head"><h3>× Tercih etmediklerim</h3><span class="meta" id="skip-count">—</span></div>
+      <div class="card"><div class="food-list" id="food-skip"></div></div>
+
+      <div class="section-head"><h3>! Tepki verdiklerim</h3><span class="meta" id="react-count">—</span></div>
+      <div class="card"><div class="food-list" id="food-react"></div></div>
+
+      <div class="section-head"><h3>○ Diğerleri</h3><span class="meta" id="neutral-count">—</span></div>
+      <div class="card"><div class="food-list" id="food-neutral"></div></div>
+
+      <div class="section-head">
+        <h3>Bu fazda iyi gelenler</h3>
+        <span class="meta">Sevdiklerinden seçilmiş</span>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-label">Tüket</div>
+          <div class="rec-list" id="food-good"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Sınırla</div>
+          <div class="rec-list" id="food-bad"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ MEALS ═══════════════ -->
+    <section class="page" data-page="meals">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Daily Intake</div>
+          <h1 class="page-title">yemek</h1>
+        </div>
+        <div class="page-meta">Bugün<strong id="today-cal">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label"><span>Ne yedin?</span><span>AI varsa kalori tahmin eder</span></div>
+        <div class="form-row">
+          <div class="field" style="flex:2;">
+            <label class="field-label">Yemek Açıklaması</label>
+            <input type="text" class="input" id="meal-desc" placeholder="ör. 1 kase yulaf ezmesi muz ve cevizle" onkeydown="if(event.key==='Enter')addMeal()">
+          </div>
+          <div class="field" style="max-width:130px;">
+            <label class="field-label">Öğün</label>
+            <select class="select" id="meal-type">
+              <option>Kahvaltı</option><option>Öğle</option><option>Akşam</option><option>Atıştırmalık</option>
+            </select>
+          </div>
+          <div class="field" style="max-width:100px;">
+            <label class="field-label">Kalori</label>
+            <input type="number" class="input" id="meal-cal" placeholder="auto">
+          </div>
+          <button class="btn" onclick="addMeal()">Ekle</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Son günler</h3>
+        <span class="meta">Geriye doğru</span>
+      </div>
+      <div id="meal-log"></div>
+    </section>
+
+    <!-- ═══════════════ SKIN ═══════════════ -->
+    <section class="page" data-page="skin">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Skin Library</div>
+          <h1 class="page-title">cilt</h1>
+        </div>
+        <div class="page-meta">Bu Faz<strong id="skin-phase">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label"><span>Bugünkü Cilt Durumu</span><span>Otomatik kaydedilir</span></div>
+        <div id="skin-state-chips" class="chip-group"></div>
+      </div>
+
+      <div class="section-head">
+        <h3>Cilt bakım dolabım</h3>
+        <span class="meta" id="product-count">—</span>
+      </div>
+      <div class="card">
+        <div class="form-row">
+          <div class="product-search-wrap">
+            <label class="field-label">Ürün Adı &nbsp;·&nbsp; yazınca otomatik aratılır</label>
+            <input type="text" class="input" id="prod-name" placeholder="ör. Some By Mi AHA-BHA-PHA Toner" autocomplete="off">
+            <div class="search-results" id="search-results"></div>
+          </div>
+          <div class="field" style="max-width:160px;">
+            <label class="field-label">Tip</label>
+            <select class="select" id="prod-type">
+              <option>Temizleyici</option><option>Tonik</option><option>Esans</option>
+              <option>Serum</option><option>Nemlendirici</option><option>Krem</option>
+              <option>Göz Kremi</option><option>SPF</option><option>Maske</option>
+              <option>Eksfoliant</option><option>Spot Tedavi</option><option>Yağ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Anahtar İçerik</label>
+            <input type="text" class="input" id="prod-active" placeholder="otomatik dolacak">
+          </div>
+          <button class="btn" onclick="addProduct()">Ekle</button>
+        </div>
+        <p style="font-family: var(--f-meta);font-size:11px;color:var(--ink-soft);margin-top:14px;letter-spacing:.08em;">
+          [ INCIDecoder &amp; AI ile ürün otomatik bulunur. AI bağlıysa daha iyi çalışır. ]
+        </p>
+      </div>
+
+      <div class="card mt-16" style="padding:16px 24px;">
+        <table id="product-table">
+          <thead><tr><th>Ürün</th><th>Tip</th><th>İçerik</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="section-head">
+        <h3>Faza özel rutin önerisi</h3>
+        <span class="meta">Senin ürünlerinden</span>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-label">Sabah</div>
+          <div class="rec-list" id="skin-am"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Akşam</div>
+          <div class="rec-list" id="skin-pm"></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Cilt günlüğü</h3>
+        <span class="meta">Geçmiş Kayıtlar</span>
+      </div>
+      <div class="card" style="padding:16px 24px;">
+        <table id="skin-table">
+          <thead><tr><th>Tarih</th><th>Faz</th><th>Durum</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════ FITNESS ═══════════════ -->
+    <section class="page" data-page="fitness">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Movement</div>
+          <h1 class="page-title">spor</h1>
+        </div>
+        <div class="page-meta">Bu Hafta<strong id="week-workouts">—</strong></div>
+      </header>
+
+      <div class="card">
+        <div class="card-label">Antrenman Ekle</div>
+        <div class="form-row">
+          <div class="field">
+            <label class="field-label">Tarih</label>
+            <input type="date" class="input" id="fit-date">
+          </div>
+          <div class="field">
+            <label class="field-label">Tür</label>
+            <select class="select" id="fit-type">
+              <option>Yürüyüş</option><option>Kardio</option><option>Güç</option>
+              <option>Yoga</option><option>Pilates</option><option>Esneme</option>
+              <option>HIIT</option><option>Diğer</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Süre (dk)</label>
+            <input type="number" class="input" id="fit-min" placeholder="30">
+          </div>
+          <div class="field">
+            <label class="field-label">Yoğunluk 1-5</label>
+            <input type="number" min="1" max="5" class="input" id="fit-int" placeholder="3">
+          </div>
+          <button class="btn" onclick="addWorkout()">Ekle</button>
+        </div>
+        <div class="form-row mt-16">
+          <div class="field" style="flex:1;">
+            <label class="field-label">Notlar</label>
+            <input type="text" class="input" id="fit-note" placeholder="ör. headstand 2 set, pelvik açma">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Faza özel antrenman</h3>
+        <span class="meta" id="fit-phase">—</span>
+      </div>
+      <div class="card">
+        <div class="rec-list" id="fit-rec"></div>
+      </div>
+
+      <div class="section-head">
+        <h3>Antrenman günlüğü</h3>
+        <span class="meta">Son 30 Gün</span>
+      </div>
+      <div class="card" style="padding:16px 24px;">
+        <table id="fit-table">
+          <thead><tr><th>Tarih</th><th>Tür</th><th>Süre</th><th>Yoğunluk</th><th>Faz</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════ INSIGHTS ═══════════════ -->
+    <section class="page" data-page="insights">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">Pattern Recognition</div>
+          <h1 class="page-title">öngörüler</h1>
+        </div>
+        <div class="page-meta">Veri<strong id="insight-count">—</strong></div>
+      </header>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-label">Ortalama Döngü</div>
+          <div class="card-value" id="ins-avg">—<em>g</em></div>
+          <div class="card-sub" id="ins-avg-sub">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">En Sık Semptom</div>
+          <div class="card-value" id="ins-sym" style="font-size:38px;">—</div>
+          <div class="card-sub" id="ins-sym-sub">—</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Faza göre şişkinlik</h3>
+        <span class="meta">Korelasyon</span>
+      </div>
+      <div class="card">
+        <div class="bars" id="phase-bloat-bars"></div>
+      </div>
+
+      <div class="section-head">
+        <h3>Yiyecek tetikleyiciler</h3>
+        <span class="meta">Senin için</span>
+      </div>
+      <div class="card">
+        <div class="rec-list" id="trigger-list"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ CHAT ═══════════════ -->
+    <section class="page" data-page="chat">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">AI Companion</div>
+          <h1 class="page-title">sohbet</h1>
+        </div>
+        <div class="page-meta">Backend<strong id="chat-status">—</strong></div>
+      </header>
+
+      <div class="chat-container">
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-quick" id="chat-quick"></div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chat-input" placeholder="Yaz... (örn: bugün 2 dilim ekmek peynirle)" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">Gönder</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ SETTINGS ═══════════════ -->
+    <section class="page" data-page="settings">
+      <header class="page-head">
+        <div>
+          <div class="page-eyebrow">System</div>
+          <h1 class="page-title">ayarlar</h1>
+        </div>
+        <div class="page-meta">v.iii</div>
+      </header>
+
+      <div class="section-head"><h3>Yapay zeka</h3><span class="meta">Optional</span></div>
+      <div class="card">
+        <div class="settings-row">
+          <div>
+            <h5>AI Backend URL</h5>
+            <p>Cloudflare Worker URL'in. Boşsa AI özellikleri devre dışı.</p>
+          </div>
+        </div>
+        <input type="text" class="input mt-16" id="ai-url" placeholder="https://femme-ai.your-name.workers.dev" oninput="saveAiUrl()">
+        <div class="form-row mt-16">
+          <button class="btn-sm btn-ghost btn" onclick="testAi()">Bağlantıyı Test Et</button>
+          <span id="ai-status" style="font-family: var(--f-meta);font-size:11px;font-weight:500;color:var(--ink-soft);align-self:center;letter-spacing:.08em;"></span>
+        </div>
+      </div>
+
+      <div class="section-head"><h3>Verilerim</h3><span class="meta">Yedekle / Aktar</span></div>
+      <div class="card">
+        <div class="settings-row">
+          <div><h5>Dışa aktar</h5><p>Tüm verilerini JSON olarak indir.</p></div>
+          <button class="btn-sm btn" onclick="exportData()">İndir</button>
+        </div>
+        <div class="settings-row">
+          <div><h5>İçe aktar</h5><p>Daha önce indirdiğin yedeği yükle.</p></div>
+          <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="font-size:11px;">
+        </div>
+        <div class="settings-row">
+          <div><h5 style="color:var(--crimson);">Sıfırla</h5><p>Tüm verileri sil. Geri alınamaz.</p></div>
+          <button class="btn-sm btn btn-accent" onclick="resetData()">Sıfırla</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   FEMME v.3 — Session Log
+   Noir-shoujo, Gemini-ready, product search
+   ════════════════════════════════════════════════ */
+
+const STORAGE_KEY = 'femme_v3';
+
+const defaultState = {
+  setup: false,
+  avgCycle: 28,
+  avgPeriod: 5,
+  periods: [],
+  days: {},
+  body: [],
+  foods: [],
+  products: [],
+  meals: [],
+  workouts: [],
+  customSymptoms: [],
+  aiUrl: '',
+  chat: [],
+};
+
+let state = loadState();
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    // try v2 migration
+    if (!raw) {
+      const v2 = localStorage.getItem('femme_v2');
+      if (v2) {
+        const data = JSON.parse(v2);
+        return { ...structuredClone(defaultState), ...data };
+      }
+      return structuredClone(defaultState);
+    }
+    return { ...structuredClone(defaultState), ...JSON.parse(raw) };
+  } catch(e){ return structuredClone(defaultState); }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function showToast(msg = 'Kaydedildi'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastT);
+  window.__toastT = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ─── date utils ─────────────────────────────────
+const ymd = d => {
+  const dt = (d instanceof Date) ? d : new Date(d);
+  const y = dt.getFullYear(), m = String(dt.getMonth()+1).padStart(2,'0'), da = String(dt.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+};
+const fromYmd = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const today = () => ymd(new Date());
+const daysBetween = (a, b) => Math.round((fromYmd(b) - fromYmd(a)) / 86400000);
+const addDays = (s, n) => { const d = fromYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const formatDate = s => {
+  const d = fromYmd(s);
+  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+};
+const formatLong = s => {
+  const d = fromYmd(s);
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const dayNames = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  return `${dayNames[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+};
+
+// ─── moon icons (SVG) ─────────────────────────
+const MOON_ICONS = {
+  menstrual: `<svg viewBox="0 0 32 32" fill="none" class="moon-icon"><circle cx="16" cy="16" r="13" fill="var(--crimson)"/><circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5"/></svg>`,
+  follicular: `<svg viewBox="0 0 32 32" fill="none" class="moon-icon"><circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5" fill="var(--paper)"/><path d="M16 3a13 13 0 0 1 0 26z" fill="var(--ink)"/></svg>`,
+  ovulation: `<svg viewBox="0 0 32 32" fill="none" class="moon-icon"><circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5" fill="var(--moon)"/><circle cx="16" cy="16" r="3" fill="var(--crimson)"/></svg>`,
+  luteal: `<svg viewBox="0 0 32 32" fill="none" class="moon-icon"><circle cx="16" cy="16" r="13" stroke="var(--ink)" stroke-width="1.5" fill="var(--paper)"/><path d="M16 3a13 13 0 0 0 0 26 9 9 0 0 1 0-26z" fill="var(--ink)"/></svg>`,
+};
+
+// ─── cycle math ────────────────────────────────
+function getLastPeriodStart(){
+  if (!state.periods.length) return null;
+  return state.periods.slice().sort((a,b)=>b.start.localeCompare(a.start))[0].start;
+}
+function getAvgCycleLength(){
+  const ps = state.periods.slice().sort((a,b)=>a.start.localeCompare(b.start));
+  if (ps.length < 2) return state.avgCycle;
+  const diffs = [];
+  for (let i = 1; i < ps.length; i++) diffs.push(daysBetween(ps[i-1].start, ps[i].start));
+  const w = diffs.map((_, i) => i + 1);
+  const sumW = w.reduce((a,b)=>a+b,0);
+  return Math.round(diffs.reduce((s, d, i) => s + d * w[i], 0) / sumW);
+}
+function getAvgPeriodLength(){
+  if (!state.periods.length) return state.avgPeriod;
+  return Math.round(state.periods.reduce((s,p)=>s+(p.length||state.avgPeriod),0) / state.periods.length);
+}
+
+function cycleInfo(forDate = today()){
+  const last = getLastPeriodStart();
+  if (!last) return null;
+  const avgC = getAvgCycleLength();
+  const avgP = getAvgPeriodLength();
+  let cyclesAhead = Math.floor(daysBetween(last, forDate) / avgC);
+  let cycleStart = addDays(last, cyclesAhead * avgC);
+  let dayInCycle = daysBetween(cycleStart, forDate) + 1;
+  if (dayInCycle > avgC) {
+    cycleStart = addDays(cycleStart, avgC);
+    dayInCycle = daysBetween(cycleStart, forDate) + 1;
+  }
+  const ovuDay = avgC - 14;
+  let phaseKey;
+  if (dayInCycle <= avgP) phaseKey = 'menstrual';
+  else if (dayInCycle <= ovuDay - 1) phaseKey = 'follicular';
+  else if (dayInCycle <= ovuDay + 1) phaseKey = 'ovulation';
+  else phaseKey = 'luteal';
+  return {
+    cycleStart, dayInCycle, avgC, avgP, phaseKey,
+    nextPeriod: addDays(cycleStart, avgC),
+    ovulation: addDays(cycleStart, ovuDay - 1),
+    fertileStart: addDays(cycleStart, ovuDay - 5),
+    fertileEnd: addDays(cycleStart, ovuDay),
+  };
+}
+
+// ─── content libraries ─────────────────────────
+const PHASES = {
+  menstrual: {
+    name: 'Menstrüel',
+    days: '1—5',
+    desc: 'Adet günleri. Östrojen ve progesteron en düşük seviyede; vücut yenileniyor. Enerji düşük, içe dönüklük artar.',
+    symptoms: ['Karın krampları','Bel ağrısı','Yorgunluk','Baş ağrısı','Şişkinlik','Hassasiyet','Düşük enerji','Uyku ihtiyacı','Hassas göğüsler'],
+    food: { good: ['Demir açısından zengin (kırmızı et, koyu yeşillikler)','Magnezyum (kabak çekirdeği, koyu çikolata)','Sıcak çorbalar','Zencefil & papatya çayı','Bol su'],
+            bad: ['Kafein (krampları artırır)','Çok tuzlu yiyecekler','Alkol','Aşırı şeker'] },
+    fitness: ['Yürüyüş','Hafif yoga','Esneme & restorative pozlar','Gerekirse dinlenme'],
+    skinFocus: { am: ['Temizleyici','Nemlendirici','SPF'], pm: ['Temizleyici','Nemlendirici'] },
+    skinNote: 'Yatıştırıcı, basit rutin. Aktiflerden uzak dur. Hidrasyon ve bariyer odaklı.',
+    actives: ['niyasinamid','centella','panthenol','hyalüronik','seramid'],
+  },
+  follicular: {
+    name: 'Foliküler',
+    days: '6—13',
+    desc: 'Östrojen yükseliyor. Enerji, motivasyon ve cilt parlaklığı artıyor. Yeni şeyler denemek için ideal dönem.',
+    symptoms: ['Yüksek enerji','İyi ruh hali','Net düşünme','Artmış motivasyon','Cilt parlaklığı','Yaratıcılık'],
+    food: { good: ['Probiyotikler (yoğurt, kefir, kombucha)','Çimlendirilmiş tahıllar','Hafif proteinler (somon)','Bol yeşillik','Fermente sebzeler'],
+            bad: ['Aşırı işlenmiş gıda','Trans yağlar'] },
+    fitness: ['HIIT','Güç antrenmanı','Koşu','Yeni dersler / hareketler','Headstand denemeleri'],
+    skinFocus: { am: ['Temizleyici','Serum','Nemlendirici','SPF'], pm: ['Temizleyici','Eksfoliant','Serum','Nemlendirici'] },
+    skinNote: 'Cilt en toleranslı dönem. Aktifleri kademeli artırabilirsin.',
+    actives: ['c vitamini','retinol','aha','bha','peptit'],
+  },
+  ovulation: {
+    name: 'Ovulasyon',
+    days: '14',
+    desc: 'Östrojen tepe noktada, LH yükselir. Kendini en iyi hissettiğin gün. Sosyallik ve özgüven yüksek.',
+    symptoms: ['Cinsel istek artışı','Hafif tek taraflı karın ağrısı','Cilt en iyi halinde','Yüksek özgüven','Hafif şişkinlik','Beyaz akıntı artışı'],
+    food: { good: ['Antioksidanlar (yaban mersini, böğürtlen)','Çapraz çiçekli sebzeler (brokoli, karnabahar)','Lif','Bol su'],
+            bad: ['Aşırı sodyum','Alkol'] },
+    fitness: ['Yüksek yoğunluk','Grup dersi','Power yoga','En zorlu antrenmanın için ideal'],
+    skinFocus: { am: ['Temizleyici','Serum','Nemlendirici','SPF'], pm: ['Temizleyici','Serum','Nemlendirici'] },
+    skinNote: 'Cilt parlak ve dengeli. Antioksidanlar ışıltıyı destekler.',
+    actives: ['c vitamini','peptit','antioksidan','niyasinamid'],
+  },
+  luteal: {
+    name: 'Luteal',
+    days: '15—28',
+    desc: 'Progesteron yükselir, sonra düşer. PMS başlangıcı: şişkinlik, ruh hali dalgalanmaları, sivilceler. Kendine yumuşak ol.',
+    symptoms: ['Şişkinlik','Sivilceler','Göğüs hassasiyeti','Sinirlilik','Tatlı krizleri','Tuzlu krizleri','Düşük motivasyon','Anksiyete','Uyku problemi','Su retansiyonu','Konsantrasyon güçlüğü','Gece terlemesi'],
+    food: { good: ['B6 (muz, balık)','Kompleks karbonhidrat (tatlı patates, yulaf)','Magnezyum (badem, koyu çikolata)','Papatya & rezene çayı','Tuzu azalt'],
+            bad: ['Süt ürünleri (kişiye göre)','Beyaz şeker','Tuzlu cipsler','Kafein','Alkol'] },
+    fitness: ['Pilates','Hafif kardio','Yoga','Yürüyüş','Esneme','Yoğunluğu hafifle'],
+    skinFocus: { am: ['Temizleyici','Niyasinamid','Nemlendirici','SPF'], pm: ['Temizleyici','BHA / Spot Tedavi','Yatıştırıcı','Nemlendirici'] },
+    skinNote: 'Sebum artar, sivilce riski yüksek. BHA ve niyasinamid faydalı.',
+    actives: ['salisilik','bha','niyasinamid','centella','çinko'],
+  }
+};
+
+const SKIN_STATES = ['Parlak','Kuru','Yağlı','Karma','Sivilce','Kızarıklık','Hassas','Lekeli','Donuk','Su tutmuş','İyi durumda'];
+
+// ════════════════════════════════════════════════
+// RENDER ORCHESTRATOR
+// ════════════════════════════════════════════════
+function renderAll(){
+  renderDashboard();
+  renderCycle();
+  renderSymptoms();
+  renderBody();
+  renderFoods();
+  renderMeals();
+  renderSkin();
+  renderFitness();
+  renderInsights();
+  renderChat();
+  renderSettings();
+}
+
+// ─── navigation ────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const page = btn.dataset.page;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelector(`.page[data-page="${page}"]`).classList.add('active');
+    renderAll();
+  });
+});
+
+// ─── onboarding ────────────────────────────────
+function checkOnboarding(){
+  if (!state.setup) {
+    document.getElementById('onboard').classList.remove('hidden');
+    document.getElementById('onb-last').value = today();
+  }
+}
+function completeOnboarding(){
+  const last = document.getElementById('onb-last').value;
+  const cycle = parseInt(document.getElementById('onb-cycle').value) || 28;
+  const period = parseInt(document.getElementById('onb-period').value) || 5;
+  if (!last) { alert('Lütfen son adet tarihini gir.'); return; }
+  state.avgCycle = cycle;
+  state.avgPeriod = period;
+  state.periods.push({ start: last, length: period, flow: 'orta' });
+  state.setup = true;
+  saveState();
+  document.getElementById('onboard').classList.add('hidden');
+  renderAll();
+}
+
+// ─── period management ─────────────────────────
+function addPeriod(){
+  const start = document.getElementById('period-start').value;
+  const len = parseInt(document.getElementById('period-len').value) || state.avgPeriod;
+  const flow = document.getElementById('period-flow').value;
+  if (!start) { alert('Tarih gir.'); return; }
+  if (state.periods.find(p=>p.start===start)) { alert('Bu tarih zaten kayıtlı.'); return; }
+  state.periods.push({ start, length: len, flow });
+  state.periods.sort((a,b)=>a.start.localeCompare(b.start));
+  saveState();
+  document.getElementById('period-start').value = '';
+  document.getElementById('period-len').value = '';
+  showToast('Adet kaydı eklendi');
+  renderAll();
+}
+function deletePeriod(start){
+  if (!confirm('Bu kaydı silmek istediğine emin misin?')) return;
+  state.periods = state.periods.filter(p=>p.start!==start);
+  saveState();
+  renderAll();
+}
+
+// ─── body ──────────────────────────────────────
+let selectedBloat = null;
+function saveBody(auto = false){
+  const date = document.getElementById('body-date').value || today();
+  const weight = parseFloat(document.getElementById('body-weight').value) || null;
+  const waist = parseFloat(document.getElementById('body-waist').value) || null;
+  if (selectedBloat === null && weight === null && waist === null) {
+    if (!auto) alert('En az bir alan gir.');
+    return;
+  }
+  const existing = state.body.find(b=>b.date===date);
+  const entry = { date, weight, waist, bloat: selectedBloat };
+  if (existing) Object.assign(existing, entry);
+  else state.body.push(entry);
+  state.body.sort((a,b)=>a.date.localeCompare(b.date));
+  saveState();
+  if (!auto) showToast('Ölçüm kaydedildi');
+  renderBody();
+  renderDashboard();
+}
+
+// ─── food prefs ────────────────────────────────
+function addFood(){
+  const name = document.getElementById('food-name').value.trim();
+  const cat = document.getElementById('food-cat').value;
+  const pref = document.getElementById('food-pref').value;
+  if (!name) return;
+  if (state.foods.find(f=>f.name.toLowerCase()===name.toLowerCase())) {
+    alert('Zaten ekli. Listeden tercihini değiştirebilirsin.'); return;
+  }
+  state.foods.push({ name, cat, pref, issues: [] });
+  saveState();
+  document.getElementById('food-name').value = '';
+  showToast(`${name} eklendi`);
+  renderFoods();
+}
+function setFoodPref(name, pref){
+  const f = state.foods.find(f=>f.name===name);
+  if (f) { f.pref = pref; saveState(); showToast('Tercih güncellendi'); renderFoods(); renderInsights(); }
+}
+function addFoodIssue(name){
+  const issue = prompt(`"${name}" yedikten sonra yaşadığın rahatsızlık (örn: şişkinlik, baş ağrısı, sivilce):`);
+  if (!issue) return;
+  const f = state.foods.find(f=>f.name===name);
+  if (f) {
+    f.issues.push(issue.trim());
+    if (f.pref === 'neutral' || f.pref === 'love') f.pref = 'react';
+    saveState();
+    showToast('Tepki kaydedildi');
+    renderFoods();
+    renderInsights();
+  }
+}
+function removeFoodIssue(name, idx){
+  const f = state.foods.find(f=>f.name===name);
+  if (f) { f.issues.splice(idx, 1); saveState(); renderFoods(); }
+}
+function deleteFood(name){
+  if (!confirm(`"${name}" silinsin mi?`)) return;
+  state.foods = state.foods.filter(f=>f.name!==name);
+  saveState();
+  renderFoods();
+}
+
+// ─── meals ─────────────────────────────────────
+async function addMeal(){
+  const desc = document.getElementById('meal-desc').value.trim();
+  const type = document.getElementById('meal-type').value;
+  let cal = parseInt(document.getElementById('meal-cal').value) || null;
+  if (!desc) return;
+  const date = today();
+
+  if (cal === null && state.aiUrl) {
+    showToast('AI kaloriyi tahmin ediyor...');
+    try {
+      const res = await aiCall({ task: 'estimate_calories', description: desc });
+      if (res && typeof res.calories === 'number') cal = res.calories;
+    } catch(e){ console.error(e); }
+  }
+
+  state.meals.push({ date, type, desc, cal: cal || 0 });
+  state.meals.sort((a,b)=>b.date.localeCompare(a.date));
+  saveState();
+  document.getElementById('meal-desc').value = '';
+  document.getElementById('meal-cal').value = '';
+  showToast('Yemek eklendi' + (cal ? ` · ${cal} kcal` : ''));
+  renderMeals();
+  renderDashboard();
+}
+function deleteMeal(idx){
+  state.meals.splice(idx, 1);
+  saveState();
+  renderMeals();
+}
+
+// ─── skin products w/ search ──────────────────
+let searchTimer;
+function setupProductSearch(){
+  const input = document.getElementById('prod-name');
+  input.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    const q = input.value.trim();
+    if (q.length < 3) { hideSearchResults(); return; }
+    searchTimer = setTimeout(() => searchProducts(q), 400);
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.product-search-wrap')) hideSearchResults();
+  });
+}
+function hideSearchResults(){
+  const r = document.getElementById('search-results');
+  r.classList.remove('show');
+  r.innerHTML = '';
+}
+async function searchProducts(query){
+  const wrap = document.getElementById('search-results');
+  wrap.classList.add('show');
+  wrap.innerHTML = `<div class="search-status">aranıyor...</div>`;
+
+  let results = [];
+
+  // Try INCIDecoder via worker (if AI url is set)
+  if (state.aiUrl) {
+    try {
+      const r = await aiCall({ task: 'search_product', query });
+      if (r?.results?.length) results = r.results;
+    } catch(e){ console.error('Product search error:', e); }
+  }
+
+  if (!results.length) {
+    wrap.innerHTML = `<div class="search-status">Sonuç bulunamadı. ${state.aiUrl ? '' : 'AI bağlı değil — Ayarlar\'dan URL ekle.'}</div>`;
+    return;
+  }
+
+  wrap.innerHTML = results.slice(0, 8).map((r, i) => `
+    <div class="search-result" data-i="${i}">
+      <div class="search-result-name">${r.name}</div>
+      <div class="search-result-desc">${r.type || ''}${r.actives ? ' · ' + r.actives : ''}</div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.search-result').forEach(el => {
+    el.addEventListener('click', () => {
+      const r = results[parseInt(el.dataset.i)];
+      document.getElementById('prod-name').value = r.name;
+      if (r.type) document.getElementById('prod-type').value = r.type;
+      if (r.actives) document.getElementById('prod-active').value = r.actives;
+      hideSearchResults();
+    });
+  });
+}
+
+function addProduct(){
+  const name = document.getElementById('prod-name').value.trim();
+  const type = document.getElementById('prod-type').value;
+  const active = document.getElementById('prod-active').value.trim();
+  if (!name) return;
+  state.products.push({ name, type, active });
+  saveState();
+  document.getElementById('prod-name').value = '';
+  document.getElementById('prod-active').value = '';
+  hideSearchResults();
+  showToast(`${name} eklendi`);
+  renderSkin();
+}
+function deleteProduct(idx){
+  if (!confirm('Bu ürünü silmek istediğine emin misin?')) return;
+  state.products.splice(idx, 1);
+  saveState();
+  renderSkin();
+}
+
+// ─── workouts ──────────────────────────────────
+function addWorkout(){
+  const date = document.getElementById('fit-date').value || today();
+  const type = document.getElementById('fit-type').value;
+  const min = parseInt(document.getElementById('fit-min').value) || 0;
+  const intensity = parseInt(document.getElementById('fit-int').value) || 3;
+  const note = document.getElementById('fit-note').value;
+  if (!min) { alert('Süre gir.'); return; }
+  state.workouts.push({ date, type, min, intensity, note });
+  state.workouts.sort((a,b)=>b.date.localeCompare(a.date));
+  saveState();
+  document.getElementById('fit-min').value = '';
+  document.getElementById('fit-int').value = '';
+  document.getElementById('fit-note').value = '';
+  showToast('Antrenman eklendi');
+  renderFitness();
+  renderDashboard();
+}
+
+// ─── day log ───────────────────────────────────
+function getTodayLog(){
+  if (!state.days[today()]) state.days[today()] = { symptoms: [], skinStates: [] };
+  if (!state.days[today()].symptoms) state.days[today()].symptoms = [];
+  if (!state.days[today()].skinStates) state.days[today()].skinStates = [];
+  return state.days[today()];
+}
+function toggleSym(s){
+  const log = getTodayLog();
+  const i = log.symptoms.indexOf(s);
+  if (i >= 0) log.symptoms.splice(i, 1);
+  else log.symptoms.push(s);
+  saveState();
+  renderSymptoms();
+  showToast(i >= 0 ? 'Çıkarıldı' : 'Eklendi');
+}
+function setMood(v){ getTodayLog().mood = v; saveState(); renderSymptoms(); renderDashboard(); showToast('Ruh hali kaydedildi'); }
+function setEnergy(v){ getTodayLog().energy = v; saveState(); renderSymptoms(); renderDashboard(); showToast('Enerji kaydedildi'); }
+function addCustomSymptom(){
+  const v = document.getElementById('custom-sym').value.trim();
+  if (!v) return;
+  if (!state.customSymptoms.includes(v)) state.customSymptoms.push(v);
+  saveState();
+  document.getElementById('custom-sym').value = '';
+  renderSymptoms();
+}
+function setBloat(v){ selectedBloat = v; renderBody(); saveBody(true); }
+function toggleSkin(s){
+  const log = getTodayLog();
+  const i = log.skinStates.indexOf(s);
+  if (i >= 0) log.skinStates.splice(i, 1);
+  else log.skinStates.push(s);
+  saveState();
+  renderSkin();
+  showToast('Cilt durumu güncellendi');
+}
+
+// notes autosave
+let notesTimer;
+document.addEventListener('input', e => {
+  if (e.target.id === 'day-notes') {
+    clearTimeout(notesTimer);
+    notesTimer = setTimeout(() => {
+      getTodayLog().notes = e.target.value;
+      saveState();
+      showToast('Not kaydedildi');
+    }, 600);
+  }
+});
+
+// ════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════
+function renderDashboard(){
+  document.getElementById('today-date').textContent = formatLong(today());
+  const ci = cycleInfo();
+  if (!ci) return;
+  const phase = PHASES[ci.phaseKey];
+  document.getElementById('today-phase').textContent = phase.name;
+  document.getElementById('today-eyebrow').textContent = `Cycle Day ${ci.dayInCycle} / ${ci.avgC}`;
+  document.getElementById('phase-day-meta').textContent = `Day ${ci.dayInCycle} of ${ci.avgC}`;
+  document.getElementById('ring-day-num').textContent = ci.dayInCycle;
+  document.getElementById('phase-current').textContent = phase.name;
+  document.getElementById('phase-moon-icon').innerHTML = MOON_ICONS[ci.phaseKey];
+  document.getElementById('phase-current-desc').textContent = phase.desc;
+  document.getElementById('next-period').textContent = formatDate(ci.nextPeriod);
+  document.getElementById('next-ovu').textContent = formatDate(ci.ovulation);
+  document.getElementById('fertile-window').textContent = `${formatDate(ci.fertileStart)}–${formatDate(ci.fertileEnd)}`;
+
+  const circ = 2 * Math.PI * 86;
+  const ratio = ci.dayInCycle / ci.avgC;
+  document.getElementById('ring-progress').setAttribute('stroke-dasharray', `${circ * ratio} ${circ}`);
+  document.getElementById('ring-progress').setAttribute('stroke-dashoffset', '0');
+
+  // ticks every 7 days
+  const ticks = document.getElementById('ring-ticks');
+  ticks.innerHTML = '';
+  for (let d = 0; d < ci.avgC; d++) {
+    if (d % 7 !== 0) continue;
+    const angle = (d / ci.avgC) * 2 * Math.PI - Math.PI/2;
+    const x1 = 100 + 92 * Math.cos(angle);
+    const y1 = 100 + 92 * Math.sin(angle);
+    const x2 = 100 + 96 * Math.cos(angle);
+    const y2 = 100 + 96 * Math.sin(angle);
+    ticks.innerHTML += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#5a4e3f" stroke-width="1"/>`;
+  }
+
+  const marks = document.getElementById('ring-marks');
+  marks.innerHTML = '';
+  const points = [
+    { d: ci.avgP, c: '#8b1a2e' },
+    { d: ci.avgC - 14 - 1, c: '#8a9b78' },
+    { d: ci.avgC - 14, c: '#b8893a' },
+  ];
+  points.forEach(p => {
+    const angle = (p.d / ci.avgC) * 2 * Math.PI - Math.PI/2;
+    const x = 100 + 86 * Math.cos(angle);
+    const y = 100 + 86 * Math.sin(angle);
+    marks.innerHTML += `<circle cx="${x}" cy="${y}" r="3" fill="${p.c}" stroke="#1c1814" stroke-width="0.5"/>`;
+  });
+
+  const lastBody = state.body[state.body.length - 1];
+  const prevBody = state.body[state.body.length - 2];
+  if (lastBody?.weight) {
+    document.getElementById('dash-weight').innerHTML = `${lastBody.weight}<em>kg</em>`;
+    if (prevBody?.weight) {
+      const d = (lastBody.weight - prevBody.weight).toFixed(1);
+      document.getElementById('weight-delta').textContent = (d > 0 ? '↑ ' : d < 0 ? '↓ ' : '') + Math.abs(d) + ' kg';
+      document.getElementById('weight-trend').textContent = `Önceki: ${prevBody.weight} kg`;
+    }
+  } else { document.getElementById('dash-weight').innerHTML = '—'; }
+
+  if (lastBody?.bloat !== null && lastBody?.bloat !== undefined) {
+    const sign = lastBody.bloat > 0 ? '+' : '';
+    document.getElementById('dash-bloat').innerHTML = `${sign}${lastBody.bloat}`;
+    document.getElementById('bloat-trend').textContent = lastBody.bloat >= 2 ? 'Yüksek — bugün dinlen' : lastBody.bloat <= 0 ? 'Rahat' : 'Hafif şişkinlik';
+  } else { document.getElementById('dash-bloat').innerHTML = '—'; }
+
+  const todayLog = state.days[today()];
+  if (todayLog?.mood) {
+    document.getElementById('dash-mood').textContent = todayLog.mood + '/5';
+    document.getElementById('mood-trend').textContent = todayLog.energy ? `Enerji: ${todayLog.energy}/5` : '—';
+  } else { document.getElementById('dash-mood').textContent = '—'; }
+
+  const weekStart = addDays(today(), -7);
+  const weekW = state.workouts.filter(w => w.date >= weekStart);
+  document.getElementById('dash-workouts').innerHTML = `${weekW.length}<em>x</em>`;
+  document.getElementById('workout-trend').textContent = weekW.reduce((s,w)=>s+w.min,0) + ' dk toplam';
+
+  renderRecommendations(phase);
+}
+
+function renderRecommendations(phase){
+  const lovedFoods = state.foods.filter(f => f.pref === 'love');
+  const recF = document.getElementById('rec-food');
+  let foodRecs = phase.food.good.slice(0, 3);
+  if (lovedFoods.length) {
+    foodRecs = [
+      ...lovedFoods.slice(0, 2).map(f => `${f.name} — sevdiklerinden`),
+      ...phase.food.good.slice(0, 2),
+    ];
+  }
+  recF.innerHTML = foodRecs.map(t => `<div class="rec"><div class="rec-icon">+</div><div><h5>${t}</h5></div></div>`).join('');
+
+  document.getElementById('rec-fitness').innerHTML =
+    phase.fitness.slice(0, 4).map(t => `<div class="rec"><div class="rec-icon">→</div><div><h5>${t}</h5></div></div>`).join('');
+
+  const skinRecs = matchProductsToPhase(phase, 4);
+  document.getElementById('rec-skin').innerHTML = skinRecs.length
+    ? skinRecs.map(p => `<div class="rec"><div class="rec-icon">·</div><div><h5>${p.name}</h5><p>${p.type}${p.active?' · '+p.active:''}</p></div></div>`).join('')
+    : `<div class="empty" style="padding:16px;font-size:14px;">Cilt > Bakım dolabına ürünlerini ekle</div>`;
+}
+
+function matchProductsToPhase(phase, limit = 6){
+  if (!state.products.length) return [];
+  const priority = ['Temizleyici','Serum','Nemlendirici','SPF','BHA','Spot Tedavi','Eksfoliant','Tonik','Maske'];
+  const scored = state.products.map(p => {
+    let score = 0;
+    const activeLower = (p.active || '').toLowerCase();
+    phase.actives.forEach(a => { if (activeLower.includes(a.toLowerCase())) score += 3; });
+    const typeIdx = priority.indexOf(p.type);
+    if (typeIdx >= 0) score += (priority.length - typeIdx);
+    return { ...p, score };
+  });
+  return scored.sort((a,b)=>b.score-a.score).slice(0, limit);
+}
+
+function renderCycle(){
+  const tbody = document.querySelector('#period-table tbody');
+  const ps = state.periods.slice().sort((a,b)=>b.start.localeCompare(a.start));
+  tbody.innerHTML = ps.map((p, i) => {
+    const next = ps[i + 1];
+    const cycLen = next ? daysBetween(next.start, p.start) : '—';
+    return `<tr>
+      <td class="num">${formatDate(p.start)}</td>
+      <td>${p.length || '—'} gün</td>
+      <td>${p.flow || '—'}</td>
+      <td class="num">${cycLen} gün</td>
+      <td><button class="micro-btn danger" onclick="deletePeriod('${p.start}')">Sil</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="empty">Henüz kayıt yok.</td></tr>';
+
+  document.getElementById('avg-info').textContent = `Ort. ${getAvgCycleLength()} gün · ${state.periods.length} kayıt`;
+  const acc = state.periods.length < 2 ? 'Düşük' : state.periods.length < 4 ? 'Orta' : 'Yüksek';
+  document.getElementById('cycle-accuracy').textContent = acc;
+
+  const numerals = ['I','II','III','IV'];
+  const guide = document.getElementById('phase-guide');
+  guide.innerHTML = Object.entries(PHASES).map(([k, p], i) => `
+    <div class="phase-row">
+      <div class="roman">${numerals[i]}</div>
+      <div>${MOON_ICONS[k]}</div>
+      <div>
+        <h4>${p.name}</h4>
+        <div class="days">${p.days}. gün</div>
+      </div>
+      <p>${p.desc}</p>
+    </div>
+  `).join('');
+}
+
+function renderSymptoms(){
+  document.getElementById('sym-date').textContent = formatLong(today());
+  const ci = cycleInfo();
+  if (!ci) return;
+  const phase = PHASES[ci.phaseKey];
+  document.getElementById('sym-phase-label').textContent = phase.name;
+
+  const log = state.days[today()] || { symptoms: [] };
+  const selected = new Set(log.symptoms || []);
+
+  const allOther = Object.entries(PHASES)
+    .filter(([k]) => k !== ci.phaseKey)
+    .flatMap(([_, p]) => p.symptoms);
+  const otherUnique = [...new Set(allOther.filter(s => !phase.symptoms.includes(s)))];
+
+  const wrap = document.getElementById('symptom-chips');
+  wrap.innerHTML = `
+    <div class="chip-cat">Bu fazda yaygın</div>
+    <div class="chip-group" id="sym-grp-1"></div>
+    <div class="chip-cat">Diğer</div>
+    <div class="chip-group" id="sym-grp-2"></div>
+    ${state.customSymptoms.length ? `<div class="chip-cat">Özel</div><div class="chip-group" id="sym-grp-3"></div>` : ''}
+  `;
+  const makeChip = (s, cls = '') => {
+    const b = document.createElement('button');
+    b.className = 'chip ' + cls + (selected.has(s) ? ' selected accent' : '');
+    b.textContent = s;
+    b.addEventListener('click', () => toggleSym(s));
+    return b;
+  };
+  const g1 = document.getElementById('sym-grp-1');
+  phase.symptoms.forEach(s => g1.appendChild(makeChip(s)));
+  const g2 = document.getElementById('sym-grp-2');
+  otherUnique.forEach(s => g2.appendChild(makeChip(s)));
+  const g3 = document.getElementById('sym-grp-3');
+  if (g3) state.customSymptoms.forEach(s => g3.appendChild(makeChip(s, 'custom')));
+
+  const moodEl = document.getElementById('mood-scale');
+  moodEl.innerHTML = '';
+  [1,2,3,4,5].forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'scale-btn' + (log.mood === v ? ' selected' : '');
+    b.dataset.v = v;
+    b.textContent = v;
+    b.addEventListener('click', () => setMood(v));
+    moodEl.appendChild(b);
+  });
+  const energyEl = document.getElementById('energy-scale');
+  energyEl.innerHTML = '';
+  [1,2,3,4,5].forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'scale-btn' + (log.energy === v ? ' selected' : '');
+    b.dataset.v = v;
+    b.textContent = v;
+    b.addEventListener('click', () => setEnergy(v));
+    energyEl.appendChild(b);
+  });
+
+  const notes = document.getElementById('day-notes');
+  if (document.activeElement !== notes) notes.value = log.notes || '';
+}
+
+function renderBody(){
+  if (!document.getElementById('body-date').value) document.getElementById('body-date').value = today();
+  document.getElementById('body-count').textContent = state.body.length;
+
+  const bloatEl = document.getElementById('bloat-scale');
+  bloatEl.innerHTML = '';
+  [-1,0,1,2,3].forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'scale-btn' + (selectedBloat === v ? ' selected' : '');
+    b.dataset.v = v;
+    b.textContent = v > 0 ? '+'+v : v;
+    b.addEventListener('click', () => setBloat(v));
+    bloatEl.appendChild(b);
+  });
+
+  const last14 = [];
+  for (let i = 13; i >= 0; i--) last14.push(addDays(today(), -i));
+  const barsHTML = last14.map(d => {
+    const e = state.body.find(b => b.date === d);
+    const v = e?.bloat;
+    if (v === null || v === undefined) return `<div class="bar" style="height:0;background:var(--line);border:1px dashed var(--line);"><div class="bar-label">${d.slice(8)}</div></div>`;
+    const h = Math.max(8, ((v + 1) / 4) * 100);
+    const color = v >= 2 ? 'var(--crimson)' : v === 1 ? 'var(--ribbon)' : v === 0 ? 'var(--ink-soft)' : 'var(--sage)';
+    return `<div class="bar" style="height:${h}%;background:${color};">
+      <div class="bar-val">${v>0?'+'+v:v}</div>
+      <div class="bar-label">${d.slice(8)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('bloat-bars').innerHTML = barsHTML;
+
+  const tbody = document.querySelector('#body-table tbody');
+  const sorted = state.body.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  tbody.innerHTML = sorted.map((b, i) => {
+    const prev = sorted[i + 1];
+    let delta = '—', deltaClass = 'delta-eq';
+    if (prev?.weight && b.weight) {
+      const d = (b.weight - prev.weight);
+      delta = (d > 0 ? '↑' : d < 0 ? '↓' : '=') + ' ' + Math.abs(d).toFixed(1);
+      deltaClass = d > 0 ? 'delta-up' : d < 0 ? 'delta-dn' : 'delta-eq';
+    }
+    const ci = cycleInfo(b.date);
+    return `<tr>
+      <td class="num">${formatDate(b.date)}</td>
+      <td class="num">${b.weight ?? '—'}</td>
+      <td class="${deltaClass}">${delta}</td>
+      <td class="num">${b.waist ?? '—'}</td>
+      <td>${b.bloat !== null && b.bloat !== undefined ? (b.bloat>0?'+'+b.bloat:b.bloat) : '—'}</td>
+      <td>${ci ? PHASES[ci.phaseKey].name : '—'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty">Henüz ölçüm yok.</td></tr>';
+}
+
+function renderFoods(){
+  const groups = { love: [], skip: [], react: [], neutral: [] };
+  state.foods.forEach(f => groups[f.pref || 'neutral'].push(f));
+
+  document.getElementById('food-total').textContent = state.foods.length;
+  const labels = { love: 'love-count', skip: 'skip-count', react: 'react-count', neutral: 'neutral-count' };
+  Object.entries(groups).forEach(([k, arr]) => {
+    document.getElementById(labels[k]).textContent = arr.length;
+  });
+
+  const renderList = (id, arr) => {
+    const el = document.getElementById(id);
+    if (!arr.length) { el.innerHTML = '<div class="empty">Henüz yok.</div>'; return; }
+    el.innerHTML = arr.map(f => {
+      const prefIcon = { love: 'A', skip: '×', react: '!', neutral: '○' }[f.pref || 'neutral'];
+      const issuesHTML = f.issues.length
+        ? f.issues.map((iss, idx) => `<span class="tag" onclick="removeFoodIssue('${escAttr(f.name)}', ${idx})" title="kaldır">${iss}</span>`).join('')
+        : '';
+      return `<div class="food-item">
+        <div class="food-pref ${f.pref || 'neutral'}">${prefIcon}</div>
+        <div>
+          <div class="food-item-name">${f.name}</div>
+          <div class="food-item-meta">${f.cat}${issuesHTML ? ' · ' + issuesHTML : ''}</div>
+        </div>
+        <div class="food-actions">
+          <select class="select" style="font-size:10px;padding:4px 16px 4px 6px;width:auto;border:1px solid var(--ink);background:var(--paper);" onchange="setFoodPref('${escAttr(f.name)}', this.value)">
+            <option value="love" ${f.pref==='love'?'selected':''}>A · Severim</option>
+            <option value="neutral" ${f.pref==='neutral'?'selected':''}>○ Nötr</option>
+            <option value="skip" ${f.pref==='skip'?'selected':''}>× Tercih etmem</option>
+            <option value="react" ${f.pref==='react'?'selected':''}>! Tepki</option>
+          </select>
+          <button class="micro-btn" onclick="addFoodIssue('${escAttr(f.name)}')">+ Tepki</button>
+          <button class="micro-btn danger" onclick="deleteFood('${escAttr(f.name)}')">Sil</button>
+        </div>
+      </div>`;
+    }).join('');
+  };
+  renderList('food-love', groups.love);
+  renderList('food-skip', groups.skip);
+  renderList('food-react', groups.react);
+  renderList('food-neutral', groups.neutral);
+
+  const ci = cycleInfo();
+  if (!ci) return;
+  const phase = PHASES[ci.phaseKey];
+  const goodHTML = phase.food.good.map(t => `<div class="rec"><div class="rec-icon">+</div><div><h5>${t}</h5></div></div>`).join('');
+  document.getElementById('food-good').innerHTML = goodHTML;
+  const reactList = groups.react.map(f => f.name);
+  let badHTML = phase.food.bad.map(t => `<div class="rec"><div class="rec-icon">−</div><div><h5>${t}</h5></div></div>`).join('');
+  if (reactList.length) {
+    badHTML += reactList.map(n => `<div class="rec"><div class="rec-icon">!</div><div><h5>${n}</h5><p>seninle uyuşmadığı kayıtlı</p></div></div>`).join('');
+  }
+  document.getElementById('food-bad').innerHTML = badHTML;
+}
+
+function renderMeals(){
+  const todayMeals = state.meals.filter(m => m.date === today());
+  const todayCal = todayMeals.reduce((s,m)=>s+(m.cal||0), 0);
+  document.getElementById('today-cal').textContent = todayCal + ' kcal';
+
+  const byDate = {};
+  state.meals.forEach(m => {
+    if (!byDate[m.date]) byDate[m.date] = [];
+    byDate[m.date].push(m);
+  });
+  const dates = Object.keys(byDate).sort().reverse().slice(0, 14);
+  const wrap = document.getElementById('meal-log');
+  if (!dates.length) { wrap.innerHTML = '<div class="card"><div class="empty">Henüz yemek kaydı yok.</div></div>'; return; }
+  wrap.innerHTML = dates.map(d => {
+    const meals = byDate[d];
+    const dayCal = meals.reduce((s,m)=>s+(m.cal||0), 0);
+    return `<div class="meal-day">
+      <div class="meal-day-head">
+        <div class="meal-day-date">${formatLong(d)}</div>
+        <div class="meal-day-cal">${dayCal} KCAL</div>
+      </div>
+      ${meals.map(m => {
+        const idx = state.meals.indexOf(m);
+        return `<div class="meal-item">
+          <span class="meal-item-type">${m.type}</span>
+          <div>${m.desc}</div>
+          <div class="meal-item-cal">${m.cal || 0} kcal</div>
+          <button class="micro-btn danger" onclick="deleteMeal(${idx})">Sil</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderSkin(){
+  const ci = cycleInfo();
+  if (!ci) return;
+  const phase = PHASES[ci.phaseKey];
+  document.getElementById('skin-phase').textContent = phase.name;
+
+  const log = state.days[today()] || { skinStates: [] };
+  const selected = new Set(log.skinStates || []);
+  const chipsEl = document.getElementById('skin-state-chips');
+  chipsEl.innerHTML = '';
+  SKIN_STATES.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (selected.has(s) ? ' selected accent' : '');
+    b.textContent = s;
+    b.addEventListener('click', () => toggleSkin(s));
+    chipsEl.appendChild(b);
+  });
+
+  const tbody = document.querySelector('#product-table tbody');
+  document.getElementById('product-count').textContent = state.products.length + ' ürün';
+  tbody.innerHTML = state.products.map((p, i) => `
+    <tr>
+      <td class="num">${p.name}</td>
+      <td>${p.type}</td>
+      <td>${p.active || '—'}</td>
+      <td><button class="micro-btn danger" onclick="deleteProduct(${i})">Sil</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="empty">Henüz ürün yok.</td></tr>';
+
+  const matched = matchProductsToPhase(phase, 12);
+  const byType = {};
+  matched.forEach(p => { if (!byType[p.type]) byType[p.type] = []; byType[p.type].push(p); });
+
+  const buildRoutine = (types) => types.map(t => {
+    const list = byType[t] || [];
+    if (list.length) {
+      return `<div class="rec"><div class="rec-icon">·</div><div><h5>${t} · ${list[0].name}</h5>${list[0].active ? `<p>${list[0].active}</p>` : ''}</div></div>`;
+    }
+    return `<div class="rec"><div class="rec-icon" style="color:var(--ink-faint);">·</div><div><h5 style="color:var(--ink-faint);">${t} — dolabında yok</h5></div></div>`;
+  }).join('');
+  document.getElementById('skin-am').innerHTML = buildRoutine(phase.skinFocus.am);
+  document.getElementById('skin-pm').innerHTML = buildRoutine(phase.skinFocus.pm);
+  if (state.products.length) {
+    document.getElementById('skin-am').insertAdjacentHTML('afterbegin',
+      `<div class="rec" style="border-bottom:1px dashed var(--line);"><div class="rec-icon">i</div><div><h5 style="font-style:italic;font-family: var(--f-display);font-size:15px;font-weight:500;">${phase.skinNote}</h5></div></div>`);
+  }
+
+  const tbody2 = document.querySelector('#skin-table tbody');
+  const skinHistory = Object.entries(state.days)
+    .filter(([_, d]) => d.skinStates && d.skinStates.length)
+    .sort((a,b) => b[0].localeCompare(a[0]))
+    .slice(0, 30);
+  tbody2.innerHTML = skinHistory.map(([d, log]) => {
+    const ph = cycleInfo(d);
+    return `<tr><td class="num">${formatDate(d)}</td><td>${ph ? PHASES[ph.phaseKey].name : '—'}</td><td>${log.skinStates.join(', ')}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" class="empty">Henüz kayıt yok.</td></tr>';
+}
+
+function renderFitness(){
+  if (!document.getElementById('fit-date').value) document.getElementById('fit-date').value = today();
+  const weekStart = addDays(today(), -7);
+  const weekW = state.workouts.filter(w => w.date >= weekStart);
+  document.getElementById('week-workouts').textContent = weekW.length + 'x';
+
+  const ci = cycleInfo();
+  if (!ci) return;
+  const phase = PHASES[ci.phaseKey];
+  document.getElementById('fit-phase').textContent = phase.name + ' Fazı';
+  document.getElementById('fit-rec').innerHTML = phase.fitness.map(t => `<div class="rec"><div class="rec-icon">→</div><div><h5>${t}</h5></div></div>`).join('');
+
+  const tbody = document.querySelector('#fit-table tbody');
+  const cutoff = addDays(today(), -30);
+  const recent = state.workouts.filter(w => w.date >= cutoff);
+  tbody.innerHTML = recent.map(w => {
+    const ph = cycleInfo(w.date);
+    return `<tr>
+      <td class="num">${formatDate(w.date)}</td>
+      <td>${w.type}</td>
+      <td class="num">${w.min} dk</td>
+      <td>${w.intensity}/5</td>
+      <td>${ph ? PHASES[ph.phaseKey].name : '—'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="empty">Henüz antrenman yok.</td></tr>';
+}
+
+function renderInsights(){
+  document.getElementById('insight-count').textContent = state.periods.length + ' döngü';
+  const avgC = getAvgCycleLength();
+  document.getElementById('ins-avg').innerHTML = `${avgC}<em>g</em>`;
+  document.getElementById('ins-avg-sub').textContent = avgC >= 21 && avgC <= 35 ? 'Sağlıklı aralıkta' : 'Düzensiz olabilir';
+
+  const counts = {};
+  Object.values(state.days).forEach(d => (d.symptoms || []).forEach(s => counts[s] = (counts[s]||0)+1));
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('ins-sym').textContent = top ? top[0] : '—';
+  document.getElementById('ins-sym-sub').textContent = top ? top[1] + ' kez' : 'henüz veri yok';
+
+  const phaseBloats = { menstrual: [], follicular: [], ovulation: [], luteal: [] };
+  state.body.forEach(b => {
+    if (b.bloat === null || b.bloat === undefined) return;
+    const ci = cycleInfo(b.date);
+    if (ci) phaseBloats[ci.phaseKey].push(b.bloat);
+  });
+  const phaseBars = Object.entries(phaseBloats).map(([k, arr]) => {
+    const avg = arr.length ? (arr.reduce((s,v)=>s+v,0) / arr.length) : null;
+    if (avg === null) return `<div class="bar" style="height:0;background:var(--line);border:1px dashed var(--line);"><div class="bar-label">${PHASES[k].name.slice(0,4)}</div></div>`;
+    const h = Math.max(8, ((avg + 1) / 4) * 100);
+    const color = avg >= 1.5 ? 'var(--crimson)' : avg >= 0.5 ? 'var(--ribbon)' : 'var(--sage)';
+    return `<div class="bar" style="height:${h}%;background:${color};">
+      <div class="bar-val">${avg.toFixed(1)}</div>
+      <div class="bar-label">${PHASES[k].name.slice(0,4)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('phase-bloat-bars').innerHTML = phaseBars;
+
+  const triggers = state.foods.filter(f => f.issues.length > 0 || f.pref === 'react');
+  document.getElementById('trigger-list').innerHTML = triggers.length ? triggers.map(f => `
+    <div class="rec">
+      <div class="rec-icon">!</div>
+      <div>
+        <h5>${f.name}</h5>
+        <p>${f.issues.length ? f.issues.join(', ') : 'tepki olarak işaretli'}</p>
+      </div>
+    </div>
+  `).join('') : '<div class="empty">Henüz tetikleyici yiyecek tespit edilmedi.</div>';
+}
+
+function renderSettings(){
+  document.getElementById('ai-url').value = state.aiUrl || '';
+}
+
+function saveAiUrl(){
+  state.aiUrl = document.getElementById('ai-url').value.trim();
+  saveState();
+  renderChat();
+}
+async function testAi(){
+  const status = document.getElementById('ai-status');
+  if (!state.aiUrl) { status.textContent = '[ önce URL gir ]'; return; }
+  status.textContent = '[ test ediliyor... ]';
+  try {
+    const res = await aiCall({ task: 'ping' });
+    status.textContent = res?.ok ? '[ ✓ bağlandı ]' : '[ × yanıt yok ]';
+  } catch(e) {
+    status.textContent = '[ × ' + e.message + ' ]';
+  }
+}
+
+function escAttr(s){ return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+// ─── data export/import ────────────────────────
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `femme-${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Yedek indirildi');
+}
+function importData(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!confirm('Mevcut veriler üzerine yazılacak. Devam edilsin mi?')) return;
+      state = { ...defaultState, ...data };
+      saveState();
+      renderAll();
+      showToast('Yedek yüklendi');
+    } catch(err) { alert('Geçersiz dosya: ' + err.message); }
+  };
+  reader.readAsText(f);
+}
+function resetData(){
+  if (!confirm('Tüm veriler silinecek. Emin misin?')) return;
+  if (!confirm('Bu işlem geri alınamaz. Onaylıyor musun?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = structuredClone(defaultState);
+  document.getElementById('onboard').classList.remove('hidden');
+  document.getElementById('onb-last').value = today();
+}
+
+// ════════════════════════════════════════════════
+// CHAT
+// ════════════════════════════════════════════════
+function renderChat(){
+  const status = document.getElementById('chat-status');
+  status.textContent = state.aiUrl ? 'aktif' : 'pasif';
+
+  const el = document.getElementById('chat-msgs');
+  if (!state.chat.length) {
+    state.chat.push({
+      role: 'system',
+      content: state.aiUrl
+        ? 'Femme aktif. Yemek tarif et kalori tahmin edeyim, faz hakkında soru sor, ya da bugün nasıl hissettiğini paylaş.'
+        : 'AI henüz aktif değil. Ayarlar > AI Backend URL kısmına Gemini-tabanlı backend\'inin URL\'ini gir.'
+    });
+  }
+  el.innerHTML = state.chat.map(m => `<div class="chat-msg ${m.role}">${m.content.replace(/\n/g, '<br>')}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+
+  const ci = cycleInfo();
+  const actions = [
+    'Bugün ne yemeliyim?',
+    'Bu fazda spor önerisi',
+    'Cilt rutinim doğru mu?',
+    ci ? `${PHASES[ci.phaseKey].name} fazı nasıl geçer?` : null,
+  ].filter(Boolean);
+  document.getElementById('chat-quick').innerHTML = actions.map(a =>
+    `<button onclick="quickAsk('${escAttr(a)}')">${a}</button>`
+  ).join('');
+}
+
+function addChatMsg(role, content){
+  state.chat.push({ role, content });
+  if (state.chat.length > 40) state.chat = state.chat.slice(-40);
+  saveState();
+  renderChat();
+}
+function quickAsk(text){
+  document.getElementById('chat-input').value = text;
+  sendChat();
+}
+
+async function sendChat(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.aiUrl) {
+    addChatMsg('system', 'AI aktif değil. Ayarlar bölümünden URL ekle.');
+    return;
+  }
+  input.value = '';
+  addChatMsg('user', text);
+
+  const msgsEl = document.getElementById('chat-msgs');
+  const typing = document.createElement('div');
+  typing.className = 'chat-typing';
+  typing.textContent = '. . . yazıyor . . .';
+  msgsEl.appendChild(typing);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  try {
+    const ctx = buildContextSummary();
+    const history = state.chat.filter(m => m.role !== 'system').slice(-10);
+    const res = await aiCall({ task: 'chat', context: ctx, history });
+    typing.remove();
+    if (res?.reply) {
+      addChatMsg('assistant', res.reply);
+      if (res.meal && typeof res.meal.calories === 'number') {
+        state.meals.push({
+          date: today(),
+          type: res.meal.type || 'Atıştırmalık',
+          desc: res.meal.description || text,
+          cal: res.meal.calories,
+        });
+        state.meals.sort((a,b)=>b.date.localeCompare(a.date));
+        saveState();
+        renderMeals();
+        showToast(`Yemek günlüğüne eklendi · ${res.meal.calories} kcal`);
+      }
+    } else {
+      addChatMsg('system', 'Yanıt alınamadı.');
+    }
+  } catch(e) {
+    typing.remove();
+    addChatMsg('system', 'Hata: ' + e.message);
+  }
+}
+
+function buildContextSummary(){
+  const ci = cycleInfo();
+  const log = state.days[today()] || {};
+  const lastBody = state.body[state.body.length - 1];
+  return {
+    cycle: ci ? { day: ci.dayInCycle, phase: PHASES[ci.phaseKey].name, avgCycle: ci.avgC } : null,
+    today: { mood: log.mood, energy: log.energy, symptoms: log.symptoms, skinStates: log.skinStates },
+    body: lastBody ? { weight: lastBody.weight, bloat: lastBody.bloat } : null,
+    foodLove: state.foods.filter(f => f.pref === 'love').map(f => f.name),
+    foodSkip: state.foods.filter(f => f.pref === 'skip').map(f => f.name),
+    foodReact: state.foods.filter(f => f.pref === 'react' || f.issues.length).map(f => ({ name: f.name, issues: f.issues })),
+    products: state.products.map(p => ({ name: p.name, type: p.type, active: p.active })),
+  };
+}
+
+async function aiCall(payload){
+  if (!state.aiUrl) throw new Error('AI URL not set');
+  const res = await fetch(state.aiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+// ════════════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════════════
+const THEME_KEY = 'femme_theme';
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const label = document.getElementById('theme-label');
+  if (label) label.textContent = theme === 'light' ? 'krem' : 'gece moru';
+  // recolor toast border to match new crimson
+  const t = document.getElementById('toast');
+  if (t) t.style.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--crimson');
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+applyTheme(savedTheme);
+
+// ════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════
+checkOnboarding();
+if (state.setup) renderAll();
+setupProductSearch();
+</script>
+</body>
+</html>
